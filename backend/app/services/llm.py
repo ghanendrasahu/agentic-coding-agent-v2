@@ -29,7 +29,7 @@ def ask_llm(prompt: str):
 
         model=MODEL,
 
-        max_tokens=1500,
+        max_tokens=500,
 
         temperature=0.2,
 
@@ -54,6 +54,12 @@ For creating a file:
  "type":"create_file",
  "path":"filename",
  "content":"file code"
+}
+
+For running a file:
+{
+ "type":"run",
+ "path":"filename"
 }
 """
             },

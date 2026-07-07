@@ -21,8 +21,22 @@ ALLOWED_EXTENSIONS = {
 }
 
 
+BASE_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )
+    )
+)
 
-def scan_project(path="workspace"):
+
+WORKSPACE = os.path.join(
+    os.path.dirname(BASE_DIR),
+    "workspace"
+)
+
+
+def scan_project(path=WORKSPACE):
 
     files = []
 
@@ -56,7 +70,7 @@ def scan_project(path="workspace"):
 
 
 
-def read_project_context(path="workspace"):
+def read_project_context(path=WORKSPACE):
 
     context = ""
 

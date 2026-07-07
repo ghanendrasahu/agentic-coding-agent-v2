@@ -2,31 +2,49 @@ import subprocess
 import os
 
 
+BASE_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )
+    )
+)
+
+
+WORKSPACE = os.path.join(
+    os.path.dirname(BASE_DIR),
+    "workspace"
+)
+
+
 def run_python(path):
 
-    try:
+    full_path = os.path.join(
+        WORKSPACE,
+        path
+    )
 
-        result = subprocess.run(
-            [
-                "python",
-                path
-            ],
-            capture_output=True,
-            text=True,
-            timeout=30
-        )
 
+    if not os.path.exists(full_path):
 
         return {
-            "success": result.returncode == 0,
-            "output": result.stdout,
-            "error": result.stderr
+            "success":False,
+            "error":f"{path} does not exist"
         }
 
 
-    except Exception as e:
+    result = subprocess.run(
+        [
+            "python",
+            full_path
+        ],
+        capture_output=True,
+        text=True
+    )
 
-        return {
-            "success": False,
-            "error": str(e)
-        }
+
+    return {
+        "success": result.returncode == 0,
+        "output": result.stdout,
+        "error": result.stderr
+    }

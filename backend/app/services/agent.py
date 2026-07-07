@@ -4,10 +4,46 @@ import re
 from app.services.scanner import read_project_context
 from app.services.llm import ask_llm
 from app.services.file_manager import write_file
-
+from app.services.executor import run_python
 
 
 class CodingAgent:
+
+
+    def extract_json(self, text):
+
+        # remove markdown
+        text = re.sub(
+            r"```json|```",
+            "",
+            text,
+            flags=re.IGNORECASE
+        )
+
+        # remove html tags like <p>
+        text = re.sub(
+            r"<[^>]*>",
+            "",
+            text
+        )
+
+        text = text.strip()
+
+
+        # extract first JSON object
+        match = re.search(
+            r"\{.*\}",
+            text,
+            re.DOTALL
+        )
+
+
+        if match:
+            return match.group(0)
+
+
+        return text
+
 
 
     def process(self, message):
@@ -19,43 +55,30 @@ class CodingAgent:
 f"""
 You are a coding agent.
 
-Existing project:
-
+Project files:
 {context}
 
-
 User request:
-
 {message}
 
+Return ONLY JSON.
 
-Return JSON only.
+Available actions:
 
-
-For multiple files use:
-
-{{
-"type":"multi_create",
-"files":[
-{{
-"path":"folder/file.py",
-"content":"code"
-}}
-]
-}}
-
-
-For single file:
-
+CREATE FILE:
 {{
 "type":"create_file",
-"path":"file.py",
-"content":"code"
+"path":"hello.py",
+"content":"print('hello agent')"
 }}
 
+RUN FILE:
+{{
+"type":"run",
+"path":"hello.py"
+}}
 
-For explanation:
-
+CHAT:
 {{
 "type":"message",
 "content":"answer"
@@ -64,39 +87,37 @@ For explanation:
         )
 
 
-        clean = re.sub(
-            r"```json|```",
-            "",
-            response
-        ).strip()
+        print("AI RESPONSE:")
+        print(response)
 
 
-        action=json.loads(clean)
+        clean = self.extract_json(response)
 
 
+        print("CLEAN JSON:")
+        print(clean)
 
-        if action["type"]=="multi_create":
 
-            results=[]
+        try:
 
-            for file in action["files"]:
+            action = json.loads(clean)
 
-                results.append(
-                    write_file(
-                        file["path"],
-                        file["content"]
-                    )
-                )
+        except Exception as e:
 
+            print("JSON ERROR:", e)
 
             return {
-                "response":
-                "\n".join(results)
+                "response": response
             }
 
 
 
-        if action["type"]=="create_file":
+        print("ACTION:")
+        print(action)
+
+
+
+        if action.get("type") == "create_file":
 
             return {
                 "response":
@@ -108,12 +129,24 @@ For explanation:
 
 
 
-        if action["type"]=="message":
+        if action.get("type") == "run":
+
+            return {
+                "response":
+                run_python(
+                    action["path"]
+                )
+            }
+
+
+
+        if action.get("type") == "message":
 
             return {
                 "response":
                 action["content"]
             }
+
 
 
         return {
@@ -122,4 +155,4 @@ For explanation:
 
 
 
-agent=CodingAgent()
+agent = CodingAgent()

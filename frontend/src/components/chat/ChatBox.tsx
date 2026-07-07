@@ -1,91 +1,105 @@
 import { useState } from "react";
 import { api } from "../../api/client";
 
-export default function ChatBox(){
 
- const [message,setMessage]=useState("");
- const [messages,setMessages]=useState<
- {role:string,text:string}[]
- >([]);
+export default function ChatBox() {
 
- async function send(){
+    const [message, setMessage] = useState("");
+    const [chat, setChat] = useState<any[]>([]);
 
-  if(!message.trim()) return;
 
-  const userMessage={
-   role:"user",
-   text:message
-  };
+    async function sendMessage() {
 
-  setMessages(prev=>[...prev,userMessage]);
+        if (!message.trim()) return;
 
-  const current=message;
-  setMessage("");
 
-  try{
+        const userMessage = message;
 
-   const response=await api("/api/chat",{
-    method:"POST",
-    headers:{
-     "Content-Type":"application/json"
-    },
-    body:JSON.stringify({
-     message:current
-    })
-   });
 
-   const data=await response.json();
+        setChat(prev => [
+            ...prev,
+            {
+                role: "user",
+                content: userMessage
+            }
+        ]);
 
-   setMessages(prev=>[
-    ...prev,
-    {
-     role:"agent",
-     text:data.response || JSON.stringify(data)
+
+        setMessage("");
+
+
+        const res = await api(
+            "/api/chat",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: userMessage
+                })
+            }
+        );
+
+
+        const data = await res.json();
+
+
+        let answer = data.response ?? data;
+
+
+        if(typeof answer === "object"){
+            answer = JSON.stringify(
+                answer,
+                null,
+                2
+            );
+        }
+
+
+        setChat(prev => [
+            ...prev,
+            {
+                role:"agent",
+                content:answer
+            }
+        ]);
     }
-   ]);
-
-  }catch(error){
-
-   setMessages(prev=>[
-    ...prev,
-    {
-     role:"agent",
-     text:"Backend connection failed"
-    }
-   ]);
-
-  }
- }
 
 
- return(
-  <div className="chat">
+    return (
+        <div>
 
-   <div className="messages">
+            {
+                chat.map(
+                    (item,index)=>(
+                        <pre key={index}>
+                            {item.role}: {item.content}
+                        </pre>
+                    )
+                )
+            }
 
-    {messages.map((m,index)=>(
-     <div key={index}>
-      <b>{m.role}:</b> {m.text}
-     </div>
-    ))}
 
-   </div>
+            <input
+                value={message}
+                onChange={
+                    e=>setMessage(e.target.value)
+                }
+                onKeyDown={
+                    e=>{
+                        if(e.key==="Enter"){
+                            sendMessage();
+                        }
+                    }
+                }
+            />
 
 
-   <div className="input">
+            <button onClick={sendMessage}>
+                Send
+            </button>
 
-    <input
-     value={message}
-     onChange={(e)=>setMessage(e.target.value)}
-     placeholder="Ask your coding agent..."
-    />
-
-    <button onClick={send}>
-     Send
-    </button>
-
-   </div>
-
-  </div>
- )
+        </div>
+    );
 }

@@ -12,12 +12,13 @@ BASE_DIR = os.path.dirname(
 
 
 WORKSPACE = os.path.join(
-    os.path.dirname(BASE_DIR),
+    BASE_DIR,
     "workspace"
 )
 
 
-def run_python(path):
+
+def run_python(path: str):
 
     full_path = os.path.join(
         WORKSPACE,
@@ -28,9 +29,11 @@ def run_python(path):
     if not os.path.exists(full_path):
 
         return {
-            "success":False,
-            "error":f"{path} does not exist"
+            "success": False,
+            "output": "",
+            "error": f"{path} does not exist at {full_path}"
         }
+
 
 
     result = subprocess.run(
@@ -43,8 +46,9 @@ def run_python(path):
     )
 
 
+
     return {
         "success": result.returncode == 0,
-        "output": result.stdout,
-        "error": result.stderr
+        "output": result.stdout.strip(),
+        "error": result.stderr.strip()
     }

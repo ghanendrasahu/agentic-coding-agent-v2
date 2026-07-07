@@ -1,83 +1,18 @@
+/* Base styles - Layout.css handles the main theming */
 * {
   box-sizing: border-box;
-}
-
-body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0f1117;
-  color: white;
+  padding: 0;
 }
 
-.app {
-  display: flex;
-  height: 100vh;
-}
-
-.sidebar {
-  width: 240px;
-  background: #151923;
-  padding: 20px;
-  border-right: 1px solid #2a2f3a;
-}
-
-.sidebar h2 {
-  margin-bottom: 30px;
-}
-
-.sidebar button {
+html, body, #root {
   width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  background: #222938;
-  border: none;
-  color: white;
-  cursor: pointer;
-  border-radius: 6px;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 30px;
-}
-
-header {
-  border-bottom: 1px solid #2a2f3a;
-  padding-bottom: 20px;
-}
-
-.chat-box {
-  flex: 1;
-  padding: 20px 0;
-}
-
-.message {
-  background: #1d2433;
-  padding: 15px;
-  border-radius: 10px;
-  max-width: 600px;
-}
-
-.input-area {
-  display: flex;
-  gap: 10px;
-}
-
-.input-area input {
-  flex: 1;
-  padding: 14px;
-  background: #1d2433;
-  border: none;
-  color: white;
-  border-radius: 8px;
-}
-
-.input-area button {
-  padding: 14px 25px;
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 8px;
-}
+/* Ensure Monaco editor fonts are available */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');

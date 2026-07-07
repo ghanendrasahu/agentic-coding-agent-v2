@@ -1,6 +1,6 @@
-import ChatPage from "./pages/ChatPage";
+import EditorPage from "./pages/EditorPage";
 import "./index.css";
 
 export default function App() {
-  return <ChatPage />;
+  return <EditorPage />;
 }

@@ -11,7 +11,7 @@ BASE_DIR = os.path.dirname(
 
 
 WORKSPACE = os.path.join(
-    os.path.dirname(BASE_DIR),
+    BASE_DIR,
     "workspace"
 )
 
@@ -24,6 +24,9 @@ os.makedirs(
 
 def write_file(path, content):
 
+    path = path.replace("\\", "/")
+    path = path.lstrip("/")
+
     full_path = os.path.join(
         WORKSPACE,
         path
@@ -34,13 +37,15 @@ def write_file(path, content):
         exist_ok=True
     )
 
-
     with open(
         full_path,
         "w",
         encoding="utf-8"
     ) as f:
+
         f.write(content)
 
-
-    return f"Created {path}"
+    return {
+        "success": True,
+        "message": f"Created {path}"
+    }

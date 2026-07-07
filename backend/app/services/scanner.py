@@ -21,22 +21,8 @@ ALLOWED_EXTENSIONS = {
 }
 
 
-BASE_DIR = os.path.dirname(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
-    )
-)
 
-
-WORKSPACE = os.path.join(
-    os.path.dirname(BASE_DIR),
-    "workspace"
-)
-
-
-def scan_project(path=WORKSPACE):
+def scan_project(path="workspace"):
 
     files = []
 
@@ -61,8 +47,15 @@ def scan_project(path=WORKSPACE):
                     name
                 )
 
+
+                relative = os.path.relpath(
+                    full,
+                    path
+                )
+
+
                 files.append(
-                    full.replace("\\","/")
+                    relative.replace("\\","/")
                 )
 
 
@@ -70,7 +63,7 @@ def scan_project(path=WORKSPACE):
 
 
 
-def read_project_context(path=WORKSPACE):
+def read_project_context(path="workspace"):
 
     context = ""
 
@@ -80,10 +73,16 @@ def read_project_context(path=WORKSPACE):
 
     for file in files:
 
+        full_path = os.path.join(
+            path,
+            file
+        )
+
+
         try:
 
             with open(
-                file,
+                full_path,
                 "r",
                 encoding="utf-8"
             ) as f:

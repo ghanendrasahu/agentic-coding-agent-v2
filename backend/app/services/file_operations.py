@@ -11,33 +11,46 @@ BASE_DIR = os.path.dirname(
 
 
 WORKSPACE = os.path.join(
-    os.path.dirname(BASE_DIR),
+    BASE_DIR,
     "workspace"
 )
 
 
-def read_file(path):
+os.makedirs(
+    WORKSPACE,
+    exist_ok=True
+)
 
-    full_path = os.path.join(
+
+def get_full_path(path):
+
+    path = path.replace("\\", "/")
+    path = path.lstrip("/")
+
+    return os.path.join(
         WORKSPACE,
         path
     )
 
 
+def read_file(path):
+
+    full_path = get_full_path(path)
+
     if not os.path.exists(full_path):
+
         return {
             "success": False,
             "error": f"{path} does not exist"
         }
-
 
     with open(
         full_path,
         "r",
         encoding="utf-8"
     ) as f:
-        content = f.read()
 
+        content = f.read()
 
     return {
         "success": True,
@@ -45,39 +58,45 @@ def read_file(path):
     }
 
 
-
 def edit_file(path, content):
 
-    full_path = os.path.join(
-        WORKSPACE,
-        path
-    )
+    full_path = get_full_path(path)
 
+    if not os.path.exists(full_path):
+
+        return {
+            "success": False,
+            "error": f"{path} does not exist"
+        }
 
     with open(
         full_path,
         "w",
         encoding="utf-8"
     ) as f:
+
         f.write(content)
 
-
-    return f"Updated {path}"
-
+    return {
+        "success": True,
+        "message": f"Updated {path}"
+    }
 
 
 def delete_file(path):
 
-    full_path = os.path.join(
-        WORKSPACE,
-        path
-    )
-
+    full_path = get_full_path(path)
 
     if not os.path.exists(full_path):
-        return f"{path} does not exist"
 
+        return {
+            "success": False,
+            "error": f"{path} does not exist"
+        }
 
     os.remove(full_path)
 
-    return f"Deleted {path}"
+    return {
+        "success": True,
+        "message": f"Deleted {path}"
+    }

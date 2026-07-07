@@ -1,105 +1,326 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../../api/client";
 
+interface Props {
+    onFileChange?: (path: string) => void;
+}
 
-export default function ChatBox() {
+interface Message {
+    role: "user" | "agent";
+    content: string;
+}
+
+export default function ChatBox({
+    onFileChange
+}: Props) {
 
     const [message, setMessage] = useState("");
-    const [chat, setChat] = useState<any[]>([]);
+
+    const [messages, setMessages] = useState<Message[]>([]);
+
+    const [loading, setLoading] = useState(false);
+
+    const bottomRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+
+        bottomRef.current?.scrollIntoView({
+            behavior: "smooth"
+        });
+
+    }, [messages]);
 
 
-    async function sendMessage() {
 
-        if (!message.trim()) return;
+    async function send() {
 
+        if (!message.trim() || loading)
+            return;
 
-        const userMessage = message;
-
-
-        setChat(prev => [
-            ...prev,
-            {
-                role: "user",
-                content: userMessage
-            }
-        ]);
-
+        const text = message;
 
         setMessage("");
 
+        setMessages(prev => [
 
-        const res = await api(
-            "/api/chat",
+            ...prev,
+
             {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    message: userMessage
-                })
+                role: "user",
+                content: text
             }
-        );
 
+        ]);
 
-        const data = await res.json();
+        setLoading(true);
 
+        try {
 
-        let answer = data.response ?? data;
+            const res = await api(
 
+                "/api/chat",
 
-        if(typeof answer === "object"){
-            answer = JSON.stringify(
-                answer,
-                null,
-                2
+                {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type": "application/json"
+
+                    },
+
+                    body: JSON.stringify({
+
+                        message: text
+
+                    })
+
+                }
+
             );
+
+            const data = await res.json();
+
+            let reply = data.response;
+
+            if (typeof reply === "object") {
+
+                reply = JSON.stringify(
+                    reply,
+                    null,
+                    2
+                );
+
+            }
+
+            setMessages(prev => [
+
+                ...prev,
+
+                {
+
+                    role: "agent",
+
+                    content: reply
+
+                }
+
+            ]);
+
+            if (
+                data.path &&
+                onFileChange
+            ) {
+
+                onFileChange(
+                    data.path
+                );
+
+            }
+
         }
 
+        finally {
 
-        setChat(prev => [
-            ...prev,
-            {
-                role:"agent",
-                content:answer
-            }
-        ]);
+            setLoading(false);
+
+        }
+
     }
 
 
+
     return (
-        <div>
 
-            {
-                chat.map(
-                    (item,index)=>(
-                        <pre key={index}>
-                            {item.role}: {item.content}
-                        </pre>
-                    )
-                )
-            }
+        <div
 
+            style={{
 
-            <input
-                value={message}
-                onChange={
-                    e=>setMessage(e.target.value)
+                display: "flex",
+
+                flexDirection: "column",
+
+                height: "100%"
+
+            }}
+
+        >
+
+            <div
+
+                style={{
+
+                    flex: 1,
+
+                    overflowY: "auto",
+
+                    padding: 16,
+
+                    display: "flex",
+
+                    flexDirection: "column",
+
+                    gap: 12
+
+                }}
+
+            >
+
+                {
+
+                    messages.map((m, i) => (
+
+                        <div
+
+                            key={i}
+
+                            style={{
+
+                                alignSelf:
+
+                                    m.role === "user"
+
+                                        ? "flex-end"
+
+                                        : "flex-start",
+
+                                background:
+
+                                    m.role === "user"
+
+                                        ? "#2563eb"
+
+                                        : "#1e293b",
+
+                                color: "white",
+
+                                borderRadius: 14,
+
+                                padding: 12,
+
+                                maxWidth: "90%",
+
+                                whiteSpace: "pre-wrap",
+
+                                fontSize: 14
+
+                            }}
+
+                        >
+
+                            {m.content}
+
+                        </div>
+
+                    ))
+
                 }
-                onKeyDown={
-                    e=>{
-                        if(e.key==="Enter"){
-                            sendMessage();
-                        }
+
+                {
+
+                    loading &&
+
+                    <div
+
+                        style={{
+
+                            color: "#94a3b8"
+
+                        }}
+
+                    >
+
+                        Thinking...
+
+                    </div>
+
+                }
+
+                <div ref={bottomRef}/>
+
+            </div>
+
+
+
+            <div
+
+                style={{
+
+                    display: "flex",
+
+                    gap: 10,
+
+                    padding: 16,
+
+                    borderTop: "1px solid #334155"
+
+                }}
+
+            >
+
+                <textarea
+
+                    value={message}
+
+                    onChange={
+
+                        e => setMessage(
+
+                            e.target.value
+
+                        )
+
                     }
-                }
-            />
 
+                    onKeyDown={e => {
 
-            <button onClick={sendMessage}>
-                Send
-            </button>
+                        if (
+
+                            e.key === "Enter" &&
+
+                            !e.shiftKey
+
+                        ) {
+
+                            e.preventDefault();
+
+                            send();
+
+                        }
+
+                    }}
+
+                    rows={3}
+
+                    placeholder="Ask the coding agent..."
+
+                    style={{
+
+                        flex: 1,
+
+                        resize: "none"
+
+                    }}
+
+                />
+
+                <button
+
+                    onClick={send}
+
+                    disabled={loading}
+
+                >
+
+                    Send
+
+                </button>
+
+            </div>
 
         </div>
+
     );
+
 }

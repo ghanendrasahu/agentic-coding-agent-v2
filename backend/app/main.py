@@ -1,9 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import chat
-from app.routers import workspace
-
+from app.routers import chat, workspace
 
 app = FastAPI(
     title="Agentic Coding Agent API"

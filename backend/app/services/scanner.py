@@ -1,6 +1,5 @@
 import os
 
-
 IGNORE = {
     "node_modules",
     ".git",
@@ -83,7 +82,6 @@ def read_project_context(path="workspace"):
 
             with open(
                 full_path,
-                "r",
                 encoding="utf-8"
             ) as f:
 

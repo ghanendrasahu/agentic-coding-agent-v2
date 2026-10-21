@@ -19,6 +19,7 @@ frontend/dist/
 # Backend
 backend/.env
 backend/__pycache__/
+.venv-test/
 
 
 # Workspace generated files

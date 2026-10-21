@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ruff
+        run: pip install "ruff==0.17.1"
+
+      - name: Lint backend
+        working-directory: backend
+        run: ruff check app tests
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install locked dependencies
+        # Deterministic tree from backend/requirements.lock.
+        run: pip install -r backend/requirements.lock
+
+      - name: Run backend tests (workspace containment, sandboxed runs, CORS)
+        working-directory: backend
+        run: python -m pytest tests -q

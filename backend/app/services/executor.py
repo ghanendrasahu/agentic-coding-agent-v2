@@ -1,51 +1,46 @@
-import subprocess
 import os
+import subprocess
 
-
-BASE_DIR = os.path.dirname(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
-    )
-)
-
+from app.services.paths import PathEscape, safe_join
 
 WORKSPACE = os.path.join(
-    BASE_DIR,
+    os.path.dirname(
+        os.path.dirname(
+            os.path.dirname(
+                os.path.abspath(__file__)
+            )
+        )
+    ),
     "workspace"
 )
 
 
-
 def run_python(path: str):
 
-    full_path = os.path.join(
-        WORKSPACE,
-        path
-    )
+    try:
+        full_path = safe_join(path)
+    except PathEscape as exc:
+        return {
+            "success": False,
+            "output": "",
+            "error": str(exc)
+        }
 
-
-    if not os.path.exists(full_path):
-
+    if not full_path.is_file():
         return {
             "success": False,
             "output": "",
             "error": f"{path} does not exist at {full_path}"
         }
 
-
-
     result = subprocess.run(
         [
             "python",
-            full_path
+            os.fspath(full_path)
         ],
         capture_output=True,
         text=True
     )
-
-
 
     return {
         "success": result.returncode == 0,

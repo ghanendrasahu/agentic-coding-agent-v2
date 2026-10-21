@@ -1,44 +1,19 @@
 import os
 
-
-BASE_DIR = os.path.dirname(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
-    )
-)
-
-
-WORKSPACE = os.path.join(
-    BASE_DIR,
-    "workspace"
-)
-
-
-os.makedirs(
-    WORKSPACE,
-    exist_ok=True
-)
-
-
-def get_full_path(path):
-
-    path = path.replace("\\", "/")
-    path = path.lstrip("/")
-
-    return os.path.join(
-        WORKSPACE,
-        path
-    )
+from app.services.paths import PathEscape, safe_join
 
 
 def read_file(path):
 
-    full_path = get_full_path(path)
+    try:
+        full_path = safe_join(path)
+    except PathEscape as exc:
+        return {
+            "success": False,
+            "error": str(exc)
+        }
 
-    if not os.path.exists(full_path):
-
+    if not full_path.is_file():
         return {
             "success": False,
             "error": f"{path} does not exist"
@@ -46,7 +21,6 @@ def read_file(path):
 
     with open(
         full_path,
-        "r",
         encoding="utf-8"
     ) as f:
 
@@ -60,10 +34,15 @@ def read_file(path):
 
 def edit_file(path, content):
 
-    full_path = get_full_path(path)
+    try:
+        full_path = safe_join(path)
+    except PathEscape as exc:
+        return {
+            "success": False,
+            "error": str(exc)
+        }
 
-    if not os.path.exists(full_path):
-
+    if not full_path.is_file():
         return {
             "success": False,
             "error": f"{path} does not exist"
@@ -85,10 +64,15 @@ def edit_file(path, content):
 
 def delete_file(path):
 
-    full_path = get_full_path(path)
+    try:
+        full_path = safe_join(path)
+    except PathEscape as exc:
+        return {
+            "success": False,
+            "error": str(exc)
+        }
 
-    if not os.path.exists(full_path):
-
+    if not full_path.is_file():
         return {
             "success": False,
             "error": f"{path} does not exist"

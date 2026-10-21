@@ -1,0 +1,9 @@
+# Tooling configuration for the FastAPI backend (source-run; no packaging).
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+
+[tool.ruff.lint]
+# Deliberate blind excepts in the LLM/web layers stay; the gate covers
+# correctness, unused imports, import order and modernizations.
+select = ["E4", "E7", "E9", "F", "I", "UP"]

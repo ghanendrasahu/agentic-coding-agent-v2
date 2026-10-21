@@ -1,10 +1,11 @@
 import json
 import re
 
-from app.services.scanner import read_project_context
-from app.services.llm import ask_llm
-from app.services.file_manager import write_file
 from app.services.executor import run_python
+from app.services.file_manager import write_file
+from app.services.llm import ask_llm
+from app.services.paths import PathEscape
+from app.services.scanner import read_project_context
 
 
 class CodingAgent:
@@ -119,23 +120,37 @@ CHAT:
 
         if action.get("type") == "create_file":
 
-            return {
-                "response":
-                write_file(
+            try:
+                result = write_file(
                     action["path"],
                     action["content"]
                 )
+            except (PathEscape, KeyError) as exc:
+                result = {
+                    "success": False,
+                    "error": str(exc)
+                }
+
+            return {
+                "response": result
             }
 
 
 
         if action.get("type") == "run":
 
-            return {
-                "response":
-                run_python(
+            try:
+                result = run_python(
                     action["path"]
                 )
+            except KeyError:
+                result = {
+                    "success": False,
+                    "error": "run action requires a path"
+                }
+
+            return {
+                "response": result
             }
 
 

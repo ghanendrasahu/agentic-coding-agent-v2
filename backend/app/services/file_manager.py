@@ -1,39 +1,13 @@
-import os
 
-
-BASE_DIR = os.path.dirname(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
-    )
-)
-
-
-WORKSPACE = os.path.join(
-    BASE_DIR,
-    "workspace"
-)
-
-
-os.makedirs(
-    WORKSPACE,
-    exist_ok=True
-)
+from app.services.paths import safe_join
 
 
 def write_file(path, content):
 
-    path = path.replace("\\", "/")
-    path = path.lstrip("/")
+    full_path = safe_join(path)
 
-    full_path = os.path.join(
-        WORKSPACE,
-        path
-    )
-
-    os.makedirs(
-        os.path.dirname(full_path),
+    full_path.parent.mkdir(
+        parents=True,
         exist_ok=True
     )
 

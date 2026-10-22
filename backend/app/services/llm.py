@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -6,14 +7,22 @@ from openai import OpenAI
 load_dotenv()
 
 
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"),
-    base_url=os.getenv("OPENAI_BASE_URL"),
-    default_headers={
-        "HTTP-Referer": "http://localhost:5173",
-        "X-Title": "Agentic Coding Agent"
-    }
-)
+@lru_cache(maxsize=1)
+def get_client() -> OpenAI:
+    """Build the OpenAI client on first use.
+
+    Instantiating the client at import time made every module that imported
+    this one require ``OPENAI_API_KEY`` - which broke test collection in CI
+    (no key) and made the module unusable for anything but live calls.
+    """
+    return OpenAI(
+        api_key=os.getenv("OPENAI_API_KEY"),
+        base_url=os.getenv("OPENAI_BASE_URL"),
+        default_headers={
+            "HTTP-Referer": "http://localhost:5173",
+            "X-Title": "Agentic Coding Agent"
+        }
+    )
 
 
 MODEL = os.getenv(
@@ -80,7 +89,7 @@ Rules:
 
 def ask_llm(prompt: str):
 
-    response = client.chat.completions.create(
+    response = get_client().chat.completions.create(
 
         model=MODEL,
 

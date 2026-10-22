@@ -9,6 +9,19 @@ from app import main as app_module
 from app.main import app
 
 
+@pytest.fixture(autouse=True)
+def stub_llm(monkeypatch: pytest.MonkeyPatch):
+    """Keep the CORS tests hermetic - they must never call a real LLM.
+
+    Without this, a POST that reaches the handler tried to build an OpenAI
+    client and failed on a missing API key, which masked the CORS assertion.
+    """
+    monkeypatch.setattr(
+        "app.services.agent.ask_llm",
+        lambda prompt: '{"type":"message","content":"ok"}',
+    )
+
+
 @pytest.fixture()
 def no_origins(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.delenv("BACKEND_ORIGINS", raising=False)
